@@ -528,7 +528,11 @@ function sanitizeText(
 }
 
 export function snapshot(ctx: ExtensionContext, secrets: readonly (string | undefined)[] = []) {
-  const messages = buildSessionContext(ctx.sessionManager.buildContextEntries()).messages;
+  // omp's session manager has no buildContextEntries; its branch is the same entry path.
+  const sm = ctx.sessionManager;
+  const entries =
+    typeof sm.buildContextEntries === "function" ? sm.buildContextEntries() : sm.getBranch();
+  const messages = buildSessionContext(entries).messages;
   const conversationTokens = messages.reduce((sum, m) => sum + estimateTokens(m), 0);
   const paths = new Map<string, { path: string; name: string }>();
   const commands = new Map<string, string>();

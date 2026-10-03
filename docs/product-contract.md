@@ -36,7 +36,7 @@ Invalid values and cancellation preserve existing settings; failed saves are rep
 | `packages/codex-plugin` | Codex CLI plugin, hint-only | `codex plugin marketplace add` this repository, then `codex plugin add compact-adviser@compact-adviser` |
 | `packages/grok-plugin` | Grok Build plugin, hint-only | `grok plugin install <path> --trust`, then `/compact-adviser-install` for the hooks and a `[ui.status_line]` opt-in for the hint |
 
-Pi uses its own agent-directory `compact-adviser.json` and Pi session custom entries.
+Pi uses its own agent-directory `compact-adviser.json` and Pi session custom entries; in this fork its firstmate advisers ([ADR 001](adr/001-firstmate-advisers.md)) add `compact-adviser-firstmate.json`, `compact-adviser-backpass.json`, and their own session custom entry, and no other host has them.
 The Grok plugin uses its own `${GROK_HOME:-~/.grok}/compact-adviser/settings.json`, plus one file per session for cooldowns and one for the verdict the status line reads; its two halves are separate processes, so nothing is held in memory between them.
 The Claude Code mod uses its own `userConfig` options (`mode`, `minContextTokens`, `contextBudgetTokens`, `logRequests`, `typesafeApiKey`) in Claude Code's settings, and its own plugin store for the automatic-mode acknowledgement and per-session cooldowns.
 `typesafeApiKey` is hidden from `/config` so the host menu never draws the secret.

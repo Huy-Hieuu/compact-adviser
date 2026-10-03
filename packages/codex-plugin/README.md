@@ -129,6 +129,7 @@ On Grok, save the TypeSafe key as `TYPESAFE_API_KEY` or a cwd `.env`, or with th
 | `COMPACT_ADVISER_DISABLE` | `1`, `true`, `yes` or `on` (any case) makes the session inert: no TypeSafe request, no hint, no automatic compaction, no command. It wins over a saved `hint` or `auto` mode |
 | `CLAUDE_CODE_ENABLE_FUNCTION_HOOKS` | Claude Code only; must be exactly `1` for the mod to load |
 | `COMPACT_ADVISER_NODE` | Codex only; absolute path to a Node 22.18 or newer executable when the hook cannot find one on its rebuilt PATH |
+| `COMPACT_ADVISER_STOW_DISABLE` / `COMPACT_ADVISER_UPDATE_DISABLE` / `COMPACT_ADVISER_BACKPASS_DISABLE` | Pi only; the same truthy values silence one [firstmate adviser](#firstmate-advisers-pi-this-fork); `COMPACT_ADVISER_DISABLE` silences all of them too |
 
 Export `COMPACT_ADVISER_DISABLE=1` for unattended agent sessions, where advice has nobody to read it.
 
@@ -186,6 +187,28 @@ On Codex the same commands are arguments to the plugin's `src/cli.ts` (`status`,
 `threshold`, `budget <tokens|off>`, `log on|off`, `key set|clear|status`) rather than a slash
 command, because Codex plugins cannot register a command with code behind it. Codex has no
 snooze or dismiss: the CLI cannot tell which session is current.
+
+## Firstmate advisers (Pi, this fork)
+
+In a [firstmate](https://github.com/kunchenguid/firstmate) home, the Pi extension (also loaded by omp) advises three more maintenance actions that are otherwise run by guesswork. Everywhere else they are inert: a home is recognised only when the session's cwd is the home itself (`bin/fm-inbox.sh`, `bin/fm-update.sh`, the `stow` and `updatefirstmate` skills under `.agents/skills/`, and `state/`), never a worker worktree or a project clone.
+
+| Adviser | Advises when | Auto (opt-in) |
+| --- | --- | --- |
+| stow | Jev judges the checkpoint finished and holding durable knowledge (preferences, decisions, lessons, open work) not yet saved; same sliding floor as `/compact`, 20,000-token minimum, and 3 exchanges plus 10k new tokens after a `/stow` | sends `/stow`; holds back one manual or threshold compaction to stow first (never an overflow recovery) |
+| update | firstmate's own `state/.tool-updates` check reports new commits on `origin/main` (fresh within 2 hours, no fetch), the fleet is idle (no live merge lock, hardware window, release, or worker paused for validation, in the primary or any secondmate home), and nothing is left to stow | sends `/updatefirstmate` once per finding |
+| backpass | a registered project (`projects/`) has at least 8 agent sessions or 20 commits since its last backpass round, and no round for it is open | drops the backpass-round note into firstmate's inbox through `bin/fm-inbox.sh`, the same note the weekly job drops, and records the round |
+
+Stow always comes first: while stow is due the compact hint reads "Run /stow first, then /compact", automatic compaction waits, and the update hint reads "Run /stow first, then /updatefirstmate". Update and backpass advice are primary-home only; a secondmate home gets stow advice. The stow judgment is a separate TypeSafe request and is not yet measured; keep hint mode until it is. Design and trade-offs: [ADR 001](https://github.com/kunchenguid/compact-adviser/blob/main/docs/adr/001-firstmate-advisers.md).
+
+| Command (Pi) | Effect |
+| --- | --- |
+| `/firstmate-adviser` / `status` | Home detection, each adviser's mode, stow state, the update finding and what blocks it, per-project backpass counts |
+| `/firstmate-adviser stow\|update\|backpass auto\|hint\|off` | Save that adviser's mode; auto asks for first-use confirmation |
+| `/firstmate-adviser stow threshold <tokens\|default>` | Minimum context before stow is judged (20,000) |
+| `/firstmate-adviser backpass sessions\|commits <n\|default>` | Backpass thresholds (8 sessions, 20 commits) |
+| `/firstmate-adviser snooze` / `dismiss` | Suppress the next three exchanges, or clear the current hints |
+
+Settings live in `<agent dir>/compact-adviser-firstmate.json`; the last backpass round per project in `compact-adviser-backpass.json` next to it.
 
 ## Judge profiles
 

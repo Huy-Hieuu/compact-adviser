@@ -33,6 +33,7 @@ import { appendErrorLog, appendRequestLog, appendResponseLog, requestLogPath } f
 import { promptMinimum } from "./minimum-input.ts";
 import { type JudgeProfile, parseProfile } from "./profile.ts";
 import {
+  checkpointAnchor,
   cooldownReason,
   initialState,
   lastResponse,
@@ -43,6 +44,8 @@ import {
 
 const LABEL = "compact-adviser";
 const HINT = "Compact adviser: work appears completed or recorded. Run /compact to save tokens.";
+const STOW_FIRST_HINT =
+  "Compact adviser: work appears completed or recorded. Run /stow first, then /compact to save tokens.";
 const USAGE =
   "Use /compact-adviser, auto, hint, off, status, threshold <tokens|default>, budget <tokens|off>, snooze or dismiss.";
 interface Options {
@@ -56,8 +59,10 @@ interface Options {
     signal: AbortSignal,
     profile?: JudgeProfile,
   ) => Promise<Judgment>;
+  /** Firstmate homes: resolves true when this checkpoint must run /stow before compacting. */
+  stowFirst?: (ctx: ExtensionContext) => Promise<boolean>;
 }
-function savedApiKey(store: ConfigStore): string | undefined {
+export function savedApiKey(store: ConfigStore): string | undefined {
   try {
     return store.read().typesafeApiKey;
   } catch {
@@ -154,7 +159,8 @@ export function installAdviser(pi: ExtensionAPI, options: Options): void {
   function sessionIdentity(ctx: ExtensionContext) {
     return JSON.stringify([
       ctx.sessionManager.getSessionId(),
-      ctx.sessionManager.getLeafId(),
+      // Not getLeafId(): the firstmate advisers append their own state while this judgment runs.
+      checkpointAnchor(ctx.sessionManager.getBranch()),
       ctx.model?.provider,
       ctx.model?.id,
     ]);
@@ -226,6 +232,9 @@ export function installAdviser(pi: ExtensionAPI, options: Options): void {
           // Response logging must not replace the gate decision.
         }
       }
+      // In a firstmate home, unsaved session knowledge is stowed before any compaction.
+      const stowFirst = (await options.stowFirst?.(ctx)) === true;
+      if (!current()) return;
       // No await between this final cross-session configuration/state check and compact().
       const latest = store.read();
       if (JSON.stringify(latest) !== configIdentity || eligible(ctx, latest, state) === undefined)
@@ -236,7 +245,7 @@ export function installAdviser(pi: ExtensionAPI, options: Options): void {
         persist(state);
         return;
       }
-      if (auto && !latest.autoAcknowledged) {
+      if (auto && (!latest.autoAcknowledged || stowFirst)) {
         persist(state);
         return;
       }
@@ -244,7 +253,8 @@ export function installAdviser(pi: ExtensionAPI, options: Options): void {
       if (!auto) {
         state = { ...state, lastHintAt: state.completed, lastHintKey: view.checkpointKey };
         persist(state);
-        ctx.ui.setWidget(LABEL, (_tui, theme) => new Text(theme.fg("warning", HINT), 0, 0));
+        const text = stowFirst ? STOW_FIRST_HINT : HINT;
+        ctx.ui.setWidget(LABEL, (_tui, theme) => new Text(theme.fg("warning", text), 0, 0));
         hintVisible = true;
       } else {
         compacting = true;

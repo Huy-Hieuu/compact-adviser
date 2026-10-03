@@ -106,32 +106,46 @@ function validate(value: unknown): Config {
     ...(c.profile !== undefined ? { profile: c.profile as string } : {}),
   };
 }
-export class ConfigStore {
+/**
+ * A small owned JSON settings file: size- and symlink-checked reads, a missing file
+ * reads as the defaults, and updates are locked, validated, fsynced and renamed.
+ */
+export class JsonStore<T extends object> {
   readonly path: string;
-  constructor(agentDir: string) {
-    this.path = join(agentDir, "compact-adviser.json");
+  readonly #validate: (value: unknown) => T;
+  readonly #defaults: Readonly<T>;
+  readonly #unreadable: string;
+  constructor(
+    path: string,
+    validate: (value: unknown) => T,
+    defaults: Readonly<T>,
+    unreadable: string,
+  ) {
+    this.path = path;
+    this.#validate = validate;
+    this.#defaults = defaults;
+    this.#unreadable = unreadable;
   }
-  read(): Config {
+  read(): T {
     try {
       const stat = lstatSync(this.path);
       if (!stat.isFile() || stat.isSymbolicLink() || stat.size > 16384)
         throw new Error("Unsafe settings file.");
-      return validate(JSON.parse(readFileSync(this.path, "utf8")));
+      return this.#validate(JSON.parse(readFileSync(this.path, "utf8")));
     } catch (error) {
-      if ((error as NodeJS.ErrnoException).code === "ENOENT") return { ...DEFAULT_CONFIG };
-      throw new Error("Cannot read compact-adviser settings; automatic action is disabled.", {
-        cause: error,
-      });
+      if ((error as NodeJS.ErrnoException).code === "ENOENT")
+        return structuredClone(this.#defaults) as T;
+      throw new Error(this.#unreadable, { cause: error });
     }
   }
-  update(patch: Partial<Omit<Config, "version">>): Config {
+  update(patch: Partial<T>): T {
     mkdirSync(dirname(this.path), { recursive: true, mode: 0o700 });
     // A short cross-process lock serializes read/merge/write. Contention is reported,
     // never hidden by overwriting another session's field update.
     const release = lockSync(this.path, { realpath: false, stale: 10000 });
     const temp = `${this.path}.${randomUUID()}.tmp`;
     try {
-      const config = validate({ ...this.read(), ...patch });
+      const config = this.#validate({ ...this.read(), ...patch });
       const fd = openSync(temp, "wx", 0o600);
       try {
         writeFileSync(fd, `${JSON.stringify(config, null, 2)}\n`);
@@ -149,5 +163,15 @@ export class ConfigStore {
       }
       release();
     }
+  }
+}
+export class ConfigStore extends JsonStore<Config> {
+  constructor(agentDir: string) {
+    super(
+      join(agentDir, "compact-adviser.json"),
+      validate,
+      DEFAULT_CONFIG,
+      "Cannot read compact-adviser settings; automatic action is disabled.",
+    );
   }
 }
