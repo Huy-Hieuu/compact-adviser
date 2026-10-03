@@ -60,6 +60,17 @@ export function lastResponse(branch: readonly SessionEntry[]) {
   }
   return undefined;
 }
+/**
+ * The newest non-custom entry id: where the conversation stands. Custom entries are this
+ * product's own state records, so writing one never makes an in-flight judgment stale.
+ */
+export function checkpointAnchor(branch: readonly SessionEntry[]): string | null {
+  for (let i = branch.length - 1; i >= 0; i--) {
+    const e = branch[i] as SessionEntry;
+    if (e.type !== "custom") return e.id;
+  }
+  return null;
+}
 export function cooldownReason(
   state: SessionState,
   tokens: number,

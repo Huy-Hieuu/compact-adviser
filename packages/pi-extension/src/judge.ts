@@ -150,7 +150,7 @@ export class JudgeError extends Error {
 function probability(v: unknown): v is number {
   return typeof v === "number" && Number.isFinite(v) && v >= 0 && v <= 1;
 }
-function choice(value: unknown, options: string[]): Choice {
+export function choice(value: unknown, options: string[]): Choice {
   const c = value as {
     type?: unknown;
     choice?: unknown;
@@ -304,13 +304,37 @@ export async function judge(
   profile?: JudgeProfile,
   endpoint = ENDPOINT,
 ): Promise<Judgment> {
+  return ask(
+    () => requestBody(state, profile),
+    parseJudgment,
+    key,
+    signal,
+    transport,
+    timeoutMs,
+    endpoint,
+  );
+}
+/**
+ * One bounded TypeSafe request: the body is built inside the guarded call, the
+ * response is capped at 32 KiB, and every failure surfaces as a `JudgeError`.
+ * `judge` and the firstmate stow judgment share this transport.
+ */
+export async function ask<T>(
+  body: () => string,
+  parse: (value: unknown) => T,
+  key: string,
+  signal: AbortSignal,
+  transport: typeof fetch = fetch,
+  timeoutMs = 2000,
+  endpoint = ENDPOINT,
+): Promise<T> {
   const timeout = AbortSignal.timeout(timeoutMs);
   try {
     const response = await transport(endpoint, {
       method: "POST",
       redirect: "error",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${key}` },
-      body: requestBody(state, profile),
+      body: body(),
       signal: AbortSignal.any([signal, timeout]),
     });
     if (!response.ok) {
@@ -339,7 +363,7 @@ export async function judge(
       await reader.cancel();
     }
     try {
-      return parseJudgment(JSON.parse(Buffer.concat(chunks).toString("utf8")));
+      return parse(JSON.parse(Buffer.concat(chunks).toString("utf8")));
     } catch {
       throw new JudgeError("response");
     }
