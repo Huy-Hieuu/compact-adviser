@@ -95,6 +95,7 @@ export function installAdviser(pi: ExtensionAPI, options: Options): void {
   const [major, minor] = options.version.split(".").map(Number);
   const supported = Number.isFinite(major) && (major > 0 || minor >= 82);
   let generation = 0;
+  let sawSettled = false;
   let lifetime = 0;
   let request: AbortController | undefined;
   let compacting = false;
@@ -307,10 +308,26 @@ export function installAdviser(pi: ExtensionAPI, options: Options): void {
   pi.on("turn_end", (_event, ctx) => {
     if (!ctx.isIdle() && hintVisible) invalidate(ctx);
   });
-  pi.on("agent_settled", (_event, ctx) => {
+  function runSettled(ctx: ExtensionContext) {
     void settled(ctx).catch(() =>
       notice(ctx, "Compact adviser could not inspect this checkpoint; context left unchanged."),
     );
+  }
+  pi.on("agent_settled", (_event, ctx) => {
+    sawSettled = true;
+    runSettled(ctx);
+  });
+  // omp has no agent_settled; its final agent_end (no scheduled continuation) is the boundary.
+  // omp still reports the session busy while agent_end handlers run, so wait for idle (<= 5 s).
+  pi.on("agent_end", (event, ctx) => {
+    if (sawSettled || ("willContinue" in event && event.willContinue === true)) return;
+    const epoch = generation;
+    const attempt = (left: number) => {
+      if (sawSettled || generation !== epoch) return;
+      if (ctx.isIdle()) runSettled(ctx);
+      else if (left > 0) setTimeout(attempt, 50, left - 1);
+    };
+    attempt(100);
   });
   pi.on("session_start", (_event, ctx) => {
     lifetime++;
