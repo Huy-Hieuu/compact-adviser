@@ -1,5 +1,41 @@
 # Changelog
 
+## [0.1.15](https://github.com/Huy-Hieuu/compact-adviser/compare/compact-adviser-v0.1.14...compact-adviser-v0.1.15) (2026-11-07)
+
+
+### Features
+
+* add an optional context budget for the hint floor ([#65](https://github.com/Huy-Hieuu/compact-adviser/issues/65)) ([2e90535](https://github.com/Huy-Hieuu/compact-adviser/commit/2e9053503cf5906f819ae8b6ca519fc94819db89))
+* add firstmate stow, update and backpass advisers to the Pi extension ([#1](https://github.com/Huy-Hieuu/compact-adviser/issues/1)) ([0e7cd04](https://github.com/Huy-Hieuu/compact-adviser/commit/0e7cd048aa98007b58c2a8afafe8feb9ebbcdc0a))
+* allow a TYPESAFE_BASE override for the TypeSafe endpoint on every host ([#59](https://github.com/Huy-Hieuu/compact-adviser/issues/59)) ([0b355ff](https://github.com/Huy-Hieuu/compact-adviser/commit/0b355ff650bd7fc4179c9af8fdf9cdeeea5a0139))
+* **claude-mod:** improve settings pane navigation and key status ([#24](https://github.com/Huy-Hieuu/compact-adviser/issues/24)) ([4ded48a](https://github.com/Huy-Hieuu/compact-adviser/commit/4ded48a88680df5e61c41960064805f0fb13a4ce))
+* **claude-mod:** run optional prompt before automatic compaction ([#69](https://github.com/Huy-Hieuu/compact-adviser/issues/69)) ([28be11c](https://github.com/Huy-Hieuu/compact-adviser/commit/28be11c0e565b89f7f29ea1873f5cccfdcebb0fe))
+* **codex-plugin:** add Codex CLI host adapter ([#36](https://github.com/Huy-Hieuu/compact-adviser/issues/36)) ([17e441a](https://github.com/Huy-Hieuu/compact-adviser/commit/17e441a81e9dbacfef15756b7d0cca66461a9b98))
+* disable compact-adviser in unattended sessions ([#31](https://github.com/Huy-Hieuu/compact-adviser/issues/31)) ([f4689fc](https://github.com/Huy-Hieuu/compact-adviser/commit/f4689fc2045d55fb877521cc271c99399d77166b))
+* **eval:** add session-grouped datasets and independent labelling ([#38](https://github.com/Huy-Hieuu/compact-adviser/issues/38)) ([839eb2f](https://github.com/Huy-Hieuu/compact-adviser/commit/839eb2f163fe9e3952a571e7db2cdccebe17ae68))
+* **grok:** add hint-only Grok Build adapter ([#30](https://github.com/Huy-Hieuu/compact-adviser/issues/30)) ([f16b45c](https://github.com/Huy-Hieuu/compact-adviser/commit/f16b45c5310eb1121792ea93ba208f23659850ca))
+* initial commit ([7e7095e](https://github.com/Huy-Hieuu/compact-adviser/commit/7e7095eee12b25998c808569e91cc404211bfc11))
+* load optional judge profiles across all hosts ([#39](https://github.com/Huy-Hieuu/compact-adviser/issues/39)) ([b2a27b5](https://github.com/Huy-Hieuu/compact-adviser/commit/b2a27b59ce86af4dc8fb5141e169bfbed1e68cee))
+* **pi-extension:** add cached judge profile optimisation harness and holdout report ([#43](https://github.com/Huy-Hieuu/compact-adviser/issues/43)) ([dfe083b](https://github.com/Huy-Hieuu/compact-adviser/commit/dfe083bd2bb51e8692c5c76e3d720b3dc4284203))
+
+
+### Bug Fixes
+
+* allow hints at consecutive checkpoints ([#22](https://github.com/Huy-Hieuu/compact-adviser/issues/22)) ([f6602c3](https://github.com/Huy-Hieuu/compact-adviser/commit/f6602c37167207dadd63f3388d0bba28598a8bfa))
+* **claude-mod:** avoid duplicate plugin name in completion hint ([#27](https://github.com/Huy-Hieuu/compact-adviser/issues/27)) ([2496d6b](https://github.com/Huy-Hieuu/compact-adviser/commit/2496d6b7b34f6f239c026b8419b9f7f7f41bb65f))
+* **claude-mod:** stop fighting biome over release-please's plugin.json ([#34](https://github.com/Huy-Hieuu/compact-adviser/issues/34)) ([a41f857](https://github.com/Huy-Hieuu/compact-adviser/commit/a41f8575c18bd27941e8ae6e445cef3eee83809f))
+* **claude-mod:** use auto-compact threshold as usage denominator ([#37](https://github.com/Huy-Hieuu/compact-adviser/issues/37)) ([73ce0d6](https://github.com/Huy-Hieuu/compact-adviser/commit/73ce0d6326c0fb411836b19ab8f307b8d4076606))
+* **codex-plugin:** capture shell-written artifacts from Codex exec tool calls ([#50](https://github.com/Huy-Hieuu/compact-adviser/issues/50)) ([6f06d04](https://github.com/Huy-Hieuu/compact-adviser/commit/6f06d046a5c041a74e44a9f21bfd295fd918b4a3))
+* keep package READMEs synchronized with root README ([#25](https://github.com/Huy-Hieuu/compact-adviser/issues/25)) ([b80e64a](https://github.com/Huy-Hieuu/compact-adviser/commit/b80e64a1f9205ed348873f0f414b2926652dc1c8))
+* **pi-extension:** judge from agent_end on hosts without agent_settled (omp) ([#2](https://github.com/Huy-Hieuu/compact-adviser/issues/2)) ([ded2709](https://github.com/Huy-Hieuu/compact-adviser/commit/ded2709ae89892a0d6b0edd6a63f6d8ba026c90c))
+* **pi:** resolve dotenv key from session cwd ([#46](https://github.com/Huy-Hieuu/compact-adviser/issues/46)) ([f249698](https://github.com/Huy-Hieuu/compact-adviser/commit/f249698f9c963a58a5ffc31605c12efea4aa79ca))
+* recognise shell-written files in the saved-artifact snapshot ([#49](https://github.com/Huy-Hieuu/compact-adviser/issues/49)) ([4b7c5cf](https://github.com/Huy-Hieuu/compact-adviser/commit/4b7c5cf2d837e9f6ed39bb3eb8e82bf74707a362))
+* recognize GNU sed in-place writes ([#52](https://github.com/Huy-Hieuu/compact-adviser/issues/52)) ([f54504a](https://github.com/Huy-Hieuu/compact-adviser/commit/f54504a4b1465d4155ca5b6a9e133f75933ab597))
+* record tee and in-place sed writes that follow a bash reserved word ([#53](https://github.com/Huy-Hieuu/compact-adviser/issues/53)) ([ec2b5dc](https://github.com/Huy-Hieuu/compact-adviser/commit/ec2b5dc5b3906ea782f4e09218355b8bdb223047))
+* report TypeSafe payment requirements as billing errors ([#72](https://github.com/Huy-Hieuu/compact-adviser/issues/72)) ([85c647d](https://github.com/Huy-Hieuu/compact-adviser/commit/85c647d716b9af0c6f37f022bb26101726c204d1))
+* require https for TYPESAFE_BASE except on loopback hosts ([#62](https://github.com/Huy-Hieuu/compact-adviser/issues/62)) ([a73995f](https://github.com/Huy-Hieuu/compact-adviser/commit/a73995f775695859547682f99b463c0b29941ebc))
+* show a single highlighted compact adviser hint ([#23](https://github.com/Huy-Hieuu/compact-adviser/issues/23)) ([3cca6d0](https://github.com/Huy-Hieuu/compact-adviser/commit/3cca6d02c4af6aa2f8f2495616915c7dbbde2eac))
+
 ## [0.1.14](https://github.com/kunchenguid/compact-adviser/compare/compact-adviser-v0.1.13...compact-adviser-v0.1.14) (2026-10-25)
 
 
