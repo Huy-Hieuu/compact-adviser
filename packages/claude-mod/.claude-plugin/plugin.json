@@ -1,6 +1,6 @@
 {
   "name": "compact-adviser",
-  "version": "0.1.12",
+  "version": "0.1.14",
   "license": "MIT",
   "description": "Suggests (or, opt-in, runs) /compact at a completed checkpoint, judged by TypeSafe Jev. Its hooks module activates only when CLAUDE_CODE_ENABLE_FUNCTION_HOOKS is exactly 1 and is otherwise a complete no-op.",
   "author": {
@@ -51,6 +51,12 @@
       "type": "string",
       "title": "Judge profile JSON",
       "description": "Optional version-1 judge profile JSON. Empty uses shipped defaults. Invalid profiles disable advice. This does not grant auto consent.",
+      "default": ""
+    },
+    "beforeCompactPrompt": {
+      "type": "string",
+      "title": "Before-compact prompt",
+      "description": "Optional. Empty keeps automatic compaction immediate. In confirmed auto mode, a non-empty value runs as one turn, then compaction runs if that turn ends in a settled answer. A value that starts with / is a slash command (for example /stow); Claude Code does not expand slash commands or @file mentions in a plugin prompt, and it rejects a plugin prompt that starts with /. If you send your own prompt or run a command in between, or that turn is interrupted, errors, or does not finish within 5 minutes, nothing is compacted.",
       "default": ""
     },
     "typesafeApiKey": {
