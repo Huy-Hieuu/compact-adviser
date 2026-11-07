@@ -62,6 +62,23 @@ test("a new checkpoint can be judged immediately; the same checkpoint is not", a
   assert.equal(h.calls, 2);
 });
 
+test("omp hosts without agent_settled are judged once from agent_end", async (t) => {
+  const h = harness(t);
+  h.enable();
+  await h.fire("agent_end", { willContinue: true });
+  assert.equal(h.calls, 0);
+  await h.fire("agent_end", { willContinue: false });
+  assert.equal(h.calls, 1);
+  await h.fire("agent_end");
+  assert.equal(h.calls, 1);
+  h.next("Now add the README section.");
+  await h.fire("agent_settled");
+  assert.equal(h.calls, 2);
+  h.next("Another checkpoint.");
+  await h.fire("agent_end");
+  assert.equal(h.calls, 2);
+});
+
 test("the hint floor slides with context usage: a finished coordinating unit hints only once the window is fuller", async (t) => {
   // finished but coordinating scores 0.5: below the 0.87 floor at 17 % of the
   // 272k window, at the 0.50 floor from 90 % on. Same judgment, different window fill.
